@@ -1,0 +1,16 @@
+# Stockfish executable
+bin/stockfish.exe
+
+# Python temporary files
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+
+# Environment variables
+.env
+
+# IDE files
+.vscode/
