@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chess Analyzer - Understand Your Moves. Master Your Game.</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Chessboard.js CSS -->
+  <link rel="stylesheet" href="vendor/chessboard.min.css">
+
+  <!-- Main Dark Theme Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 22H5v-2h14v2M19 19H5c0-3.3 2.7-6 6-6v-2c-2.2 0-4-1.8-4-4 0-.6.1-1.1.4-1.6L5.6 3.6 7 2.2l2.3 2.3C10 4.2 10.7 4 11.5 4c2.5 0 4.5 2 4.5 4.5 0 .8-.2 1.5-.6 2.2L18.4 13c.4.6.6 1.3.6 2v4z"/>
+          </svg>
+        </div>
+        <div class="brand-text">Chess<span>Analyzer</span></div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link active">Home</a></li>
+        <li><a href="analysis.html" class="nav-link">Analyze</a></li>
+        <li><a href="games.html" class="nav-link">My Games</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
+        <li>
+          <div class="status-badge checking" id="backendStatusBadge" onclick="openBackendSettingsModal()" title="Click to inspect or change backend API URL">
+            <span class="status-dot"></span> Checking API...
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    
+    <!-- Dynamic Stockfish Warning Banner -->
+    <div id="globalStockfishBanner" class="stockfish-banner" style="display: none;">
+      <div>
+        <strong>⚠️ Stockfish Engine Not Detected:</strong> Analysis requires local Stockfish executable on Render backend.
+      </div>
+      <a href="about.html#stockfish-setup" class="btn btn-secondary btn-sm">Setup Instructions</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        Free Open-Source Chess Game Analysis
+      </div>
+
+      <h1 class="hero-title">
+        Understand Your Moves.<br>
+        <span class="gradient-text">Master Your Game.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Discover mistakes, understand your decisions, and improve your chess skills with powerful local Stockfish engine game analysis.
+      </p>
+
+      <!-- Error / Alert Banner -->
+      <div id="homeAlert" class="alert alert-danger" style="display: none; max-width: 700px; margin: 0 auto 2rem;">
+        <span id="homeAlertText"></span>
+      </div>
+    </section>
+
+    <!-- Dual Option Selection Grid -->
+    <div class="options-grid">
+
+      <!-- OPTION A: Fetch Chess.com Games -->
+      <div class="option-card">
+        <div>
+          <div class="option-header">
+            <div class="option-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 17.93V18a2 2 0 0 0-2-2h-1v-2h2a2 2 0 0 0 2-2v-1h2v-2h-4.07A8.07 8.07 0 0 1 19.93 11H18a2 2 0 0 0-2 2v1h-1a2 2 0 0 0-2 2v2H9.07A8 8 0 0 1 4.07 13H6a2 2 0 0 0 2-2V9h2a2 2 0 0 0 2-2V6h1.93A8 8 0 0 1 13 19.93z"/>
+              </svg>
+            </div>
+            <h2 class="option-title">Option A: Fetch Chess.com Games</h2>
+            <p class="option-desc">Connect directly to Chess.com's public API to retrieve and review your latest 20 online matches.</p>
+          </div>
+
+          <form id="chesscomForm" onsubmit="handleChesscomSubmit(event)">
+            <div class="input-group">
+              <label class="input-label" for="chesscomUsername">Chess.com Username</label>
+              <input
+                type="text"
+                id="chesscomUsername"
+                class="input-control"
+                placeholder="e.g. MagnusCarlsen, Hikaru"
+                autocomplete="off"
+                required
+              />
+            </div>
+
+            <button type="submit" id="btnFetchGames" class="btn btn-primary" style="width: 100%;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                <path d="M16 16h5v5"/>
+              </svg>
+              <span id="fetchBtnText">Fetch Latest 20 Games</span>
+            </button>
+          </form>
+        </div>
+
+        <div style="margin-top: 1.5rem; font-size: 0.82rem; color: var(--text-dim); text-align: center;">
+          Public games only &bull; No login required &bull; Real-time lookup
+        </div>
+      </div>
+
+      <!-- OPTION B: Upload PGN File -->
+      <div class="option-card">
+        <div>
+          <div class="option-header">
+            <div class="option-icon" style="background-color: rgba(59, 130, 246, 0.1); color: var(--accent-blue);">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="18" x2="12" y2="12"/>
+                <line x1="9" y1="15" x2="15" y2="15"/>
+              </svg>
+            </div>
+            <h2 class="option-title">Option B: Upload PGN File</h2>
+            <p class="option-desc">Drag and drop any standard <code>.pgn</code> file or paste game text to inspect multi-game or casual matches.</p>
+          </div>
+
+          <div class="dropzone" id="pgnDropzone" onclick="document.getElementById('pgnFileInput').click()">
+            <input type="file" id="pgnFileInput" accept=".pgn" style="display: none;" onchange="handleFileSelected(event)">
+            
+            <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+              <path d="M12 12v9"/>
+              <path d="m16 16-4-4-4 4"/>
+            </svg>
+            <div class="dropzone-text" id="dropzoneText">Drag &amp; drop your .pgn file here</div>
+            <div class="dropzone-hint">or click to browse from your computer (max 5MB)</div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem;">
+            <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="document.getElementById('pgnFileInput').click()">
+              Browse Files
+            </button>
+            <button type="button" id="btnUploadPGN" class="btn btn-primary" style="flex: 1;" onclick="handlePGNUpload()" disabled>
+              <span id="uploadBtnText">Analyze Game</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; font-size: 0.82rem; color: var(--text-dim); text-align: center;">
+          Supports single or multi-game PGN archives &bull; Safe local parsing
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Backend Configuration Modal -->
+  <div id="backendConfigModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.2rem; font-weight: 700;">Backend API Settings</h3>
+        <button onclick="closeBackendSettingsModal()" class="btn btn-icon btn-sm" style="color: var(--text-dim); border: none; background: transparent; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Configures the backend URL (<code>API_BASE_URL</code>) used for Stockfish evaluations and Chess.com requests.
+      </p>
+      <div class="input-group">
+        <label class="input-label" for="modalApiBaseUrlInput">Backend URL</label>
+        <input type="text" id="modalApiBaseUrlInput" class="input-control" placeholder="https://your-app.onrender.com (or empty for local)">
+      </div>
+      <div id="modalBackendTestResult" style="font-size: 0.82rem; margin-bottom: 1.25rem; min-height: 22px;"></div>
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="testBackendModalConnection()">Test Connection</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="saveBackendModalSettings()">Save &amp; Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="nav-container" style="justify-content: center; flex-direction: column; gap: 0.5rem;">
+      <p>Chess Analyzer &bull; Open-Source Chess Performance & Analysis Platform</p>
+      <p style="color: var(--text-dim); font-size: 0.8rem;">
+        Powered by Python, Flask, Stockfish 19 & python-chess &bull; Independent of Chess.com
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="vendor/jquery.min.js"></script>
+  <script src="vendor/chessboard.min.js"></script>
+  <script src="vendor/chess.min.js"></script>
+  <script src="vendor/chart.umd.min.js"></script>
+  <script src="js/env.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/games.js"></script>
+</body>
+</html>

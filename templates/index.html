@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Chess Analyzer - Understand Your Moves. Master Your Game.{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+  <div class="hero-badge">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+    </svg>
+    Free Open-Source Chess Game Analysis
+  </div>
+
+  <h1 class="hero-title">
+    Understand Your Moves.<br>
+    <span class="gradient-text">Master Your Game.</span>
+  </h1>
+
+  <p class="hero-subtitle">
+    Discover mistakes, understand your decisions, and improve your chess skills with powerful local Stockfish engine game analysis.
+  </p>
+
+  <!-- Error / Alert Banner -->
+  <div id="homeAlert" class="alert alert-danger" style="display: none; max-width: 700px; margin: 0 auto 2rem;">
+    <span id="homeAlertText"></span>
+  </div>
+</section>
+
+<!-- Dual Option Selection Grid -->
+<div class="options-grid">
+
+  <!-- OPTION A: Fetch Chess.com Games -->
+  <div class="option-card">
+    <div>
+      <div class="option-header">
+        <div class="option-icon">
+          <!-- Chess.com Pawn / Web Icon -->
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 17.93V18a2 2 0 0 0-2-2h-1v-2h2a2 2 0 0 0 2-2v-1h2v-2h-4.07A8.07 8.07 0 0 1 19.93 11H18a2 2 0 0 0-2 2v1h-1a2 2 0 0 0-2 2v2H9.07A8 8 0 0 1 4.07 13H6a2 2 0 0 0 2-2V9h2a2 2 0 0 0 2-2V6h1.93A8 8 0 0 1 13 19.93z"/>
+          </svg>
+        </div>
+        <h2 class="option-title">Option A: Fetch Chess.com Games</h2>
+        <p class="option-desc">Connect directly to Chess.com's public API to retrieve and review your latest 20 online matches.</p>
+      </div>
+
+      <form id="chesscomForm" onsubmit="handleChesscomSubmit(event)">
+        <div class="input-group">
+          <label class="input-label" for="chesscomUsername">Chess.com Username</label>
+          <input
+            type="text"
+            id="chesscomUsername"
+            class="input-control"
+            placeholder="e.g. MagnusCarlsen, Hikaru"
+            autocomplete="off"
+            required
+          />
+        </div>
+
+        <button type="submit" id="btnFetchGames" class="btn btn-primary" style="width: 100%;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+            <path d="M16 16h5v5"/>
+          </svg>
+          <span id="fetchBtnText">Fetch Latest 20 Games</span>
+        </button>
+      </form>
+    </div>
+
+    <div style="margin-top: 1.5rem; font-size: 0.82rem; color: var(--text-dim); text-align: center;">
+      Public games only &bull; No login required &bull; Real-time lookup
+    </div>
+  </div>
+
+  <!-- OPTION B: Upload PGN File -->
+  <div class="option-card">
+    <div>
+      <div class="option-header">
+        <div class="option-icon" style="background-color: rgba(59, 130, 246, 0.1); color: var(--accent-blue);">
+          <!-- PGN / Upload File SVG -->
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <h2 class="option-title">Option B: Upload PGN File</h2>
+        <p class="option-desc">Drag and drop any standard <code>.pgn</code> file or paste game text to inspect multi-game or casual matches.</p>
+      </div>
+
+      <div class="dropzone" id="pgnDropzone" onclick="document.getElementById('pgnFileInput').click()">
+        <input type="file" id="pgnFileInput" accept=".pgn" style="display: none;" onchange="handleFileSelected(event)">
+        
+        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+          <path d="M12 12v9"/>
+          <path d="m16 16-4-4-4 4"/>
+        </svg>
+        <div class="dropzone-text" id="dropzoneText">Drag &amp; drop your .pgn file here</div>
+        <div class="dropzone-hint">or click to browse from your computer (max 5MB)</div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="document.getElementById('pgnFileInput').click()">
+          Browse Files
+        </button>
+        <button type="button" id="btnUploadPGN" class="btn btn-primary" style="flex: 1;" onclick="handlePGNUpload()" disabled>
+          <span id="uploadBtnText">Analyze Game</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="margin-top: 1.5rem; font-size: 0.82rem; color: var(--text-dim); text-align: center;">
+      Supports single or multi-game PGN archives &bull; Safe local parsing
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/games.js') }}"></script>
+{% endblock %}

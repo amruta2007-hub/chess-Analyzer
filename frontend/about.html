@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About &amp; Methodology - Chess Analyzer</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Chessboard.js CSS -->
+  <link rel="stylesheet" href="vendor/chessboard.min.css">
+
+  <!-- Main Dark Theme Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 22H5v-2h14v2M19 19H5c0-3.3 2.7-6 6-6v-2c-2.2 0-4-1.8-4-4 0-.6.1-1.1.4-1.6L5.6 3.6 7 2.2l2.3 2.3C10 4.2 10.7 4 11.5 4c2.5 0 4.5 2 4.5 4.5 0 .8-.2 1.5-.6 2.2L18.4 13c.4.6.6 1.3.6 2v4z"/>
+          </svg>
+        </div>
+        <div class="brand-text">Chess<span>Analyzer</span></div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="analysis.html" class="nav-link">Analyze</a></li>
+        <li><a href="games.html" class="nav-link">My Games</a></li>
+        <li><a href="about.html" class="nav-link active">About</a></li>
+        <li>
+          <div class="status-badge checking" id="backendStatusBadge" onclick="openBackendSettingsModal()" title="Click to inspect or change backend API URL">
+            <span class="status-dot"></span> Checking API...
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Dynamic Stockfish Warning Banner -->
+    <div id="globalStockfishBanner" class="stockfish-banner" style="display: none;">
+      <div>
+        <strong>⚠️ Stockfish Engine Not Detected:</strong> Analysis requires local Stockfish executable on Render backend.
+      </div>
+      <a href="#stockfish-setup" class="btn btn-secondary btn-sm">Setup Instructions</a>
+    </div>
+
+    <div style="max-width: 850px; margin: 0 auto;">
+
+      <div style="text-align: center; margin-bottom: 2.5rem;">
+        <h1 style="font-size: 2.4rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem;">
+          About Chess Analyzer
+        </h1>
+        <p style="color: var(--text-muted); font-size: 1.05rem;">
+          Transparent, local, engine-driven chess game analysis with zero subscriptions or paywalls.
+        </p>
+      </div>
+
+      <!-- Purpose Card -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--primary-light);">
+          Our Mission
+        </h2>
+        <p style="color: var(--text-muted); line-height: 1.7; margin-bottom: 1rem;">
+          Chess Analyzer is designed for players who want to understand their mistakes, master key strategic concepts, and explore alternative continuations without subscription fees, forced accounts, or privacy concerns.
+        </p>
+        <p style="color: var(--text-muted); line-height: 1.7;">
+          All evaluations are generated directly by your configured <strong>Stockfish</strong> chess engine via the standard UCI protocol. No user games are permanently stored in any database.
+        </p>
+      </div>
+
+      <!-- Classification Rules & Thresholds -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary-light);">
+          Move Classification Methodology
+        </h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6;">
+          Moves are classified based on the centipawn evaluation difference (&Delta;) between the engine's recommended best move and the move actually played on the board, evaluated strictly from the perspective of the player whose turn it was:
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+          <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 0.75rem 1rem; background: var(--bg-input); border-radius: var(--radius-md); border-left: 4px solid var(--color-brilliant);">
+            <span class="badge-classification badge-brilliant">!! Brilliant</span>
+            <div>
+              <div style="font-weight: 600; font-size: 0.95rem;">Tactical Sacrifice with Winning Advantage</div>
+              <div style="color: var(--text-muted); font-size: 0.85rem;">A move matching the engine's best choice that sacrifices piece material while establishing or maintaining a decisive winning advantage.</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 0.75rem 1rem; background: var(--bg-input); border-radius: var(--radius-md); border-left: 4px solid var(--color-best);">
+            <span class="badge-classification badge-best">★ Best</span>
+            <div>
+              <div style="font-weight: 600; font-size: 0.95rem;">Top Engine Choice (&Delta; &le; 12 cp)</div>
+              <div style="color: var(--text-muted); font-size: 0.85rem;">The engine's highest-rated continuation, maintaining optimal dynamic pressure.</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 0.75rem 1rem; background: var(--bg-input); border-radius: var(--radius-md); border-left: 4px solid var(--color-excellent);">
+            <span class="badge-classification badge-excellent">✓ Excellent</span>
+            <div>
+              <div style="font-weight: 600; font-size: 0.95rem;">Strong Move (12 &lt; &Delta; &le; 35 cp)</div>
+              <div style="color: var(--text-muted); font-size: 0.85rem;">An effective, solid choice that preserves the fundamental evaluation without major concession.</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 0.75rem 1rem; background: var(--bg-input); border-radius: var(--radius-md); border-left: 4px solid var(--color-good);">
+            <span class="badge-classification badge-good">● Good</span>
+            <div>
+              <div style="font-weight: 600; font-size: 0.95rem;">Solid Play (35 &lt; &Delta; &le; 75 cp)</div>
+              <div style="color: var(--text-muted); font-size: 0.85rem;">Playable move with slight loss in engine dynamism or initiative.</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 0.75rem 1rem; background: var(--bg-input); border-radius: var(--radius-md); border-left: 4px solid var(--color-inaccuracy);">
+            <span class="badge-classification badge-inaccuracy">?! Inaccuracy</span>
+            <div>
+              <div style="font-weight: 600; font-size: 0.95rem;">Sub-Optimal (75 &lt; &Delta; &le; 150 cp)</div>
+              <div style="color: var(--text-muted); font-size: 0.85rem;">Gives away a noticeable fraction of advantage or hands initiative to the opponent.</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 0.75rem 1rem; background: var(--bg-input); border-radius: var(--radius-md); border-left: 4px solid var(--color-mistake);">
+            <span class="badge-classification badge-mistake">? Mistake</span>
+            <div>
+              <div style="font-weight: 600; font-size: 0.95rem;">Notable Error (150 &lt; &Delta; &le; 300 cp)</div>
+              <div style="color: var(--text-muted); font-size: 0.85rem;">Significantly worsens the position or squanders a winning advantage.</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 0.75rem 1rem; background: var(--bg-input); border-radius: var(--radius-md); border-left: 4px solid var(--color-blunder);">
+            <span class="badge-classification badge-blunder">?? Blunder</span>
+            <div>
+              <div style="font-weight: 600; font-size: 0.95rem;">Major Blunder (&Delta; &gt; 300 cp or Mate Blunder)</div>
+              <div style="color: var(--text-muted); font-size: 0.85rem;">A game-changing mistake that drops critical material or allows a forced checkmate.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Accuracy Model Documentation -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary-light);">
+          Estimated Accuracy Calculation
+        </h2>
+        <p style="color: var(--text-muted); line-height: 1.7; margin-bottom: 1rem;">
+          Accuracy is estimated using the standard logistic win-probability function:
+        </p>
+        <div style="background-color: var(--bg-input); padding: 1rem; border-radius: var(--radius-md); font-family: monospace; font-size: 0.9rem; margin-bottom: 1rem; overflow-x: auto;">
+          WinProbability(cp) = 100 / (1 + exp(-0.00368208 * cp))<br>
+          Accuracy(move) = 103.1668 * exp(-0.04354 * WinProbLoss) - 3.1669
+        </div>
+        <p style="color: var(--text-dim); font-size: 0.85rem; line-height: 1.6;">
+          <em>Disclaimer: Estimated accuracy is an open-source mathematical calculation based on win probability decay. It is not the proprietary Chess.com CAPS score.</em>
+        </p>
+      </div>
+
+      <!-- Stockfish Setup Instructions -->
+      <div class="card" id="stockfish-setup" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 1rem; color: #fbbf24;">
+          Stockfish Engine Configuration
+        </h2>
+        <p style="color: var(--text-muted); line-height: 1.7; margin-bottom: 1rem;">
+          <strong>On Render Deployment:</strong> The included <code>Dockerfile</code> automatically installs the official Stockfish engine package via Debian apt and configures <code>STOCKFISH_PATH=/usr/games/stockfish</code>. No manual setup is required on Render.
+        </p>
+        <p style="color: var(--text-muted); line-height: 1.7; margin-bottom: 1rem;">
+          <strong>On Local Windows Development:</strong> A pre-configured Stockfish engine is placed in <code>bin/stockfish.exe</code>. If updating:
+        </p>
+
+        <ol style="margin-left: 1.5rem; color: var(--text-muted); line-height: 1.8; font-size: 0.95rem;">
+          <li>Download the official binary from <a href="https://stockfishchess.org/download/" target="_blank" style="color: var(--primary);">stockfishchess.org/download/</a>.</li>
+          <li>Rename the executable to <code>stockfish.exe</code>.</li>
+          <li>Place it in <code>chess-analyzer/bin/stockfish.exe</code>.</li>
+        </ol>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Backend Configuration Modal -->
+  <div id="backendConfigModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.2rem; font-weight: 700;">Backend API Settings</h3>
+        <button onclick="closeBackendSettingsModal()" class="btn btn-icon btn-sm" style="color: var(--text-dim); border: none; background: transparent; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Configures the backend URL (<code>API_BASE_URL</code>) used for Stockfish evaluations and Chess.com requests.
+      </p>
+      <div class="input-group">
+        <label class="input-label" for="modalApiBaseUrlInput">Backend URL</label>
+        <input type="text" id="modalApiBaseUrlInput" class="input-control" placeholder="https://your-app.onrender.com (or empty for local)">
+      </div>
+      <div id="modalBackendTestResult" style="font-size: 0.82rem; margin-bottom: 1.25rem; min-height: 22px;"></div>
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="testBackendModalConnection()">Test Connection</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="saveBackendModalSettings()">Save &amp; Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="nav-container" style="justify-content: center; flex-direction: column; gap: 0.5rem;">
+      <p>Chess Analyzer &bull; Open-Source Chess Performance & Analysis Platform</p>
+      <p style="color: var(--text-dim); font-size: 0.8rem;">
+        Powered by Python, Flask, Stockfish 19 & python-chess &bull; Independent of Chess.com
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="vendor/jquery.min.js"></script>
+  <script src="vendor/chessboard.min.js"></script>
+  <script src="vendor/chess.min.js"></script>
+  <script src="vendor/chart.umd.min.js"></script>
+  <script src="js/env.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

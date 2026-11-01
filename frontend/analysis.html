@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Analysis Workspace - Chess Analyzer</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Chessboard.js CSS -->
+  <link rel="stylesheet" href="vendor/chessboard.min.css">
+
+  <!-- Main Dark Theme Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 22H5v-2h14v2M19 19H5c0-3.3 2.7-6 6-6v-2c-2.2 0-4-1.8-4-4 0-.6.1-1.1.4-1.6L5.6 3.6 7 2.2l2.3 2.3C10 4.2 10.7 4 11.5 4c2.5 0 4.5 2 4.5 4.5 0 .8-.2 1.5-.6 2.2L18.4 13c.4.6.6 1.3.6 2v4z"/>
+          </svg>
+        </div>
+        <div class="brand-text">Chess<span>Analyzer</span></div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="analysis.html" class="nav-link active">Analyze</a></li>
+        <li><a href="games.html" class="nav-link">My Games</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
+        <li>
+          <div class="status-badge checking" id="backendStatusBadge" onclick="openBackendSettingsModal()" title="Click to inspect or change backend API URL">
+            <span class="status-dot"></span> Checking API...
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Dynamic Stockfish Warning Banner -->
+    <div id="globalStockfishBanner" class="stockfish-banner" style="display: none;">
+      <div>
+        <strong>⚠️ Stockfish Engine Not Detected:</strong> Analysis requires local Stockfish executable on Render backend.
+      </div>
+      <a href="about.html#stockfish-setup" class="btn btn-secondary btn-sm">Setup Instructions</a>
+    </div>
+
+    <div class="analysis-workspace">
+
+      <!-- LEFT: Interactive Chessboard & Dynamic Eval Bar -->
+      <div class="workspace-left">
+        
+        <!-- Game Top Header Summary -->
+        <div class="card" style="padding: 1rem 1.4rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <div style="font-size: 1.15rem; font-weight: 700;">
+              <span id="whitePlayerLabel" style="color: #ffffff;">White</span>
+              <span style="color: var(--text-dim); font-size: 0.9rem; margin: 0 0.35rem;">vs</span>
+              <span id="blackPlayerLabel" style="color: var(--primary-light);">Black</span>
+            </div>
+            <div id="gameMetaSub" style="color: var(--text-dim); font-size: 0.82rem;">
+              Casual Game &bull; Standard Chess
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button id="btnFlipBoard" class="btn btn-secondary btn-sm" title="Flip Board (Hotkey: F)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <polyline points="23 20 23 14 17 14"></polyline>
+                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+              </svg>
+              Flip Board
+            </button>
+
+            <a id="btnViewReport" href="report.html" class="btn btn-primary btn-sm" style="display: none;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              View Full Report
+            </a>
+          </div>
+        </div>
+
+        <!-- Board Area with Eval Bar -->
+        <div class="board-container">
+          
+          <!-- Dynamic Vertical Evaluation Bar -->
+          <div class="eval-bar-wrapper" id="evalBarWrapper" title="Stockfish Position Evaluation">
+            <div class="eval-bar-black" id="evalBarBlack" style="height: 50%;"></div>
+            <div class="eval-bar-white" id="evalBarWhite" style="height: 50%;"></div>
+            <div class="eval-bar-text" id="evalBarText">0.0</div>
+          </div>
+
+          <!-- Chessboard Element -->
+          <div class="board-wrapper">
+            <div id="chessBoard"></div>
+
+            <!-- Board Navigation & Playback Controls -->
+            <div class="board-controls">
+              <div class="control-btn-group">
+                <button id="btnFirstMove" class="btn btn-secondary btn-icon" title="First Move (Home)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                  </svg>
+                </button>
+                <button id="btnPrevMove" class="btn btn-secondary btn-icon" title="Previous Move (Left Arrow)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                  </svg>
+                </button>
+                <button id="btnPlayPause" class="btn btn-secondary btn-icon" title="Auto-Play / Pause (Space)">
+                  <svg id="playIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </button>
+                <button id="btnNextMove" class="btn btn-secondary btn-icon" title="Next Move (Right Arrow)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                  </svg>
+                </button>
+                <button id="btnLastMove" class="btn btn-secondary btn-icon" title="Last Move (End)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="move-indicator" id="currentMoveIndicator">
+                Start Position
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Stockfish Engine Analysis, Classifications & Move List -->
+      <div class="analysis-panel">
+
+        <!-- Analysis Status / Progress Card -->
+        <div class="status-card" id="analysisStatusCard">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
+            <span style="font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); display: inline-block;"></span>
+              Stockfish Engine
+            </span>
+            <span id="analysisProgressText" style="color: var(--text-dim); font-size: 0.8rem;">Ready</span>
+          </div>
+
+          <div class="progress-bar-container">
+            <div id="analysisProgressBar" class="progress-bar-fill"></div>
+          </div>
+
+          <div id="engineStatusNote" style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.4rem;">
+            Analyzing moves with deep alpha-beta search.
+          </div>
+        </div>
+
+        <!-- Active Move Insight Card -->
+        <div class="move-insight-card" id="moveInsightCard">
+          <div class="insight-header">
+            <div id="moveBadgeContainer">
+              <span class="badge-classification badge-good" id="moveBadge">Book Move</span>
+            </div>
+            <div class="eval-display" id="moveEvalDisplay">0.0</div>
+          </div>
+
+          <!-- Best Move Recommendation Box -->
+          <div class="recommendation-box" id="recommendationBox">
+            <div><strong>Best Move:</strong> <span id="recMoveName">-</span></div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem;">
+              Continuation: <span id="recContinuation">-</span>
+            </div>
+          </div>
+
+          <!-- Tactical Explanation -->
+          <div class="move-explanation" id="moveExplanation">
+            Navigate through the moves or click any move in the notation table below to inspect tactical evaluations.
+          </div>
+        </div>
+
+        <!-- Full Move History Table -->
+        <div class="move-history-card">
+          <div class="move-history-header">
+            <span>Notation &amp; Moves</span>
+            <span id="moveCountSummary" style="font-size: 0.8rem; color: var(--text-dim); font-weight: normal;">0 moves</span>
+          </div>
+
+          <div class="move-history-scroll" id="moveHistoryScroll">
+            <!-- Move rows populated dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Backend Configuration Modal -->
+  <div id="backendConfigModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.2rem; font-weight: 700;">Backend API Settings</h3>
+        <button onclick="closeBackendSettingsModal()" class="btn btn-icon btn-sm" style="color: var(--text-dim); border: none; background: transparent; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Configures the backend URL (<code>API_BASE_URL</code>) used for Stockfish evaluations and Chess.com requests.
+      </p>
+      <div class="input-group">
+        <label class="input-label" for="modalApiBaseUrlInput">Backend URL</label>
+        <input type="text" id="modalApiBaseUrlInput" class="input-control" placeholder="https://your-app.onrender.com (or empty for local)">
+      </div>
+      <div id="modalBackendTestResult" style="font-size: 0.82rem; margin-bottom: 1.25rem; min-height: 22px;"></div>
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="testBackendModalConnection()">Test Connection</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="saveBackendModalSettings()">Save &amp; Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="nav-container" style="justify-content: center; flex-direction: column; gap: 0.5rem;">
+      <p>Chess Analyzer &bull; Open-Source Chess Performance & Analysis Platform</p>
+      <p style="color: var(--text-dim); font-size: 0.8rem;">
+        Powered by Python, Flask, Stockfish 19 & python-chess &bull; Independent of Chess.com
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="vendor/jquery.min.js"></script>
+  <script src="vendor/chessboard.min.js"></script>
+  <script src="vendor/chess.min.js"></script>
+  <script src="vendor/chart.umd.min.js"></script>
+  <script src="js/env.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/analysis.js"></script>
+</body>
+</html>

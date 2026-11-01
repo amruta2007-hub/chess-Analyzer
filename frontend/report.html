@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Performance Report - Chess Analyzer</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Chessboard.js CSS -->
+  <link rel="stylesheet" href="vendor/chessboard.min.css">
+
+  <!-- Main Dark Theme Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 22H5v-2h14v2M19 19H5c0-3.3 2.7-6 6-6v-2c-2.2 0-4-1.8-4-4 0-.6.1-1.1.4-1.6L5.6 3.6 7 2.2l2.3 2.3C10 4.2 10.7 4 11.5 4c2.5 0 4.5 2 4.5 4.5 0 .8-.2 1.5-.6 2.2L18.4 13c.4.6.6 1.3.6 2v4z"/>
+          </svg>
+        </div>
+        <div class="brand-text">Chess<span>Analyzer</span></div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="analysis.html" class="nav-link">Analyze</a></li>
+        <li><a href="games.html" class="nav-link">My Games</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
+        <li>
+          <div class="status-badge checking" id="backendStatusBadge" onclick="openBackendSettingsModal()" title="Click to inspect or change backend API URL">
+            <span class="status-dot"></span> Checking API...
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Dynamic Stockfish Warning Banner -->
+    <div id="globalStockfishBanner" class="stockfish-banner" style="display: none;">
+      <div>
+        <strong>⚠️ Stockfish Engine Not Detected:</strong> Analysis requires local Stockfish executable on Render backend.
+      </div>
+      <a href="about.html#stockfish-setup" class="btn btn-secondary btn-sm">Setup Instructions</a>
+    </div>
+
+    <div class="report-container" style="max-width: 1050px; margin: 0 auto;">
+
+      <!-- Header & Match Info -->
+      <div class="report-header">
+        <div class="hero-badge" style="margin-bottom: 0.75rem;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+          </svg>
+          Stockfish Game Telemetry
+        </div>
+        <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em;">Comprehensive Game Report</h1>
+        <p id="reportSubHeader" style="color: var(--text-muted); font-size: 1rem; margin-top: 0.35rem;">
+          Deep tactical review and performance statistics.
+        </p>
+
+        <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 0.75rem;">
+          <a href="analysis.html" class="btn btn-secondary btn-sm">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Return to Board Analysis
+          </a>
+          <button onclick="window.print()" class="btn btn-outline btn-sm">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            Print / Save PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Accuracy Comparison Showcase -->
+      <div class="accuracy-showcase">
+        <!-- White Player Card -->
+        <div class="accuracy-card white-player">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #ffffff; text-transform: uppercase; letter-spacing: 0.05em;">
+            White &bull; <span id="reportWhiteUser">White Player</span>
+          </div>
+          <div class="accuracy-score" id="reportWhiteAcc" style="color: #ffffff;">--%</div>
+          <div style="color: var(--text-muted); font-size: 0.9rem;">
+            Estimated Accuracy
+          </div>
+          <div style="margin-top: 0.75rem; font-size: 0.82rem; color: var(--text-dim);">
+            Avg Centipawn Loss: <strong id="reportWhiteAcpl" style="color: var(--text-main);">--</strong> cp
+          </div>
+        </div>
+
+        <!-- Black Player Card -->
+        <div class="accuracy-card black-player">
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-light); text-transform: uppercase; letter-spacing: 0.05em;">
+            Black &bull; <span id="reportBlackUser">Black Player</span>
+          </div>
+          <div class="accuracy-score" id="reportBlackAcc" style="color: var(--primary-light);">--%</div>
+          <div style="color: var(--text-muted); font-size: 0.9rem;">
+            Estimated Accuracy
+          </div>
+          <div style="margin-top: 0.75rem; font-size: 0.82rem; color: var(--text-dim);">
+            Avg Centipawn Loss: <strong id="reportBlackAcpl" style="color: var(--text-main);">--</strong> cp
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin: -1.5rem auto 2.5rem; max-width: 650px; font-size: 0.8rem; color: var(--text-dim);">
+        <em>Note: Estimated accuracy is mathematically derived from local Stockfish centipawn evaluations via win-probability curve modeling. It is an independent open-source measurement.</em>
+      </div>
+
+      <!-- Evaluation Graph Over Time -->
+      <div class="chart-wrapper">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h3 style="font-size: 1.25rem; font-weight: 700;">Evaluation Throughout the Game</h3>
+          <span style="font-size: 0.82rem; color: var(--text-dim);">Centipawns (from White perspective)</span>
+        </div>
+        <div style="position: relative; height: 320px; width: 100%;">
+          <canvas id="evalChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Move Quality Distribution Comparison Table -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.25rem;">Move Classification Breakdown</h3>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.92rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-dim); text-transform: uppercase; font-size: 0.8rem;">
+                <th style="padding: 0.75rem 1rem;">Classification</th>
+                <th style="padding: 0.75rem 1rem;">White Moves</th>
+                <th style="padding: 0.75rem 1rem;">Black Moves</th>
+                <th style="padding: 0.75rem 1rem;">Evaluation Impact</th>
+              </tr>
+            </thead>
+            <tbody id="qualityTableBody">
+              <!-- Populated by report.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Critical Moments -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Critical Turning Points</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+          Positions where blunders, mistakes, or brilliant finds dramatically altered the course of the match.
+        </p>
+
+        <div class="critical-moments-list" id="criticalMomentsList">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Key Learning Points / Pedagogical Takeaways -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          Key Takeaways &amp; Improvement Insights
+        </h3>
+        <div id="learningPointsList" style="display: flex; flex-direction: column; gap: 0.75rem; color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Backend Configuration Modal -->
+  <div id="backendConfigModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.2rem; font-weight: 700;">Backend API Settings</h3>
+        <button onclick="closeBackendSettingsModal()" class="btn btn-icon btn-sm" style="color: var(--text-dim); border: none; background: transparent; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Configures the backend URL (<code>API_BASE_URL</code>) used for Stockfish evaluations and Chess.com requests.
+      </p>
+      <div class="input-group">
+        <label class="input-label" for="modalApiBaseUrlInput">Backend URL</label>
+        <input type="text" id="modalApiBaseUrlInput" class="input-control" placeholder="https://your-app.onrender.com (or empty for local)">
+      </div>
+      <div id="modalBackendTestResult" style="font-size: 0.82rem; margin-bottom: 1.25rem; min-height: 22px;"></div>
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="testBackendModalConnection()">Test Connection</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="saveBackendModalSettings()">Save &amp; Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="nav-container" style="justify-content: center; flex-direction: column; gap: 0.5rem;">
+      <p>Chess Analyzer &bull; Open-Source Chess Performance & Analysis Platform</p>
+      <p style="color: var(--text-dim); font-size: 0.8rem;">
+        Powered by Python, Flask, Stockfish 19 & python-chess &bull; Independent of Chess.com
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="vendor/jquery.min.js"></script>
+  <script src="vendor/chessboard.min.js"></script>
+  <script src="vendor/chess.min.js"></script>
+  <script src="vendor/chart.umd.min.js"></script>
+  <script src="js/env.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/report.js"></script>
+</body>
+</html>

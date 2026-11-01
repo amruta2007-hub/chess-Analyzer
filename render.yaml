@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: chess-analyzer-backend
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: STOCKFISH_DEPTH
+        value: "12"
+      - key: STOCKFISH_TIME_LIMIT
+        value: "0.12"
+      - key: STOCKFISH_THREADS
+        value: "2"
